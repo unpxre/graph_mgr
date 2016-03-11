@@ -10,6 +10,12 @@
 #include <vector>
 #include <sstream>
 
+#define CMD_PROMPT "graph mgr:>"
+
+#include "console_mgr.h"
+
+#define VERSION 1.1
+
 class Graph {
 	private:
 		bool isOriented;
@@ -109,24 +115,24 @@ class Mgr {
 			int userTmpInt;
 			int pairs;
 			
-			std::cout<< "Graph is oriented or not [Y]/[N]\ngraph mgr:>";
-			std::cin>>userTmpStr;
+			uConsoleMgr::echo("Graph is oriented or not [Y]/[N]\n");
+			userTmpStr = uConsoleMgr::ask<std::string>();
 			Graph graph((userTmpStr == "Y")?true:false);
 			this->graph = graph;
 			
-			std::cout<< "Number of vertexes\ngraph mgr:>";
-			std::cin>>userTmpInt;
+			uConsoleMgr::echo("Number of vertexes\n");
+			userTmpInt = uConsoleMgr::ask<int>();
 			graph.setNumbOfVertexes(userTmpInt);
 
-			std::cout<< "Number of pairs\ngraph mgr:>";
-			std::cin>>pairs;
+			uConsoleMgr::echo("Number of pairs\n");
+			pairs = uConsoleMgr::ask<int>();
 			for(int i = 1; i <= pairs; ++i) {
-				std::cout<< "Pair in format [a,b]\ngraph mgr:>";
-				std::cin>>userTmpStr;
+				uConsoleMgr::echo("Pair in format [a,b]\n");
+				userTmpStr = uConsoleMgr::ask<std::string>();
 				std::vector<std::string> ab = split(userTmpStr, ',');
 				userTmpStr = graph.setPair(strToInt(ab[0]), strToInt(ab[1]));
 				if(userTmpStr.length() > 0) {
-					std::cerr << userTmpStr;
+					uConsoleMgr::echo(userTmpStr, uConsoleMgr::WARNING);
 					--i;
 				}
 			}
@@ -139,22 +145,26 @@ class Mgr {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::cout<< "Graph mgr v 1.0\n";
+	uConsoleMgr::echo("Graph mgr v ", uConsoleMgr::CUTE);
+	uConsoleMgr::echo(VERSION, uConsoleMgr::SUCCESS);
+	uConsoleMgr::echo("\n");
 	std::string option;
 	Mgr mgr;
 
-	mgr.readFromConsole();
+	//mgr.readFromConsole();
 	//mgr.showNeighbor();
 	//mgr.showIncident();
-	system("pause");
-	return 0;
+	//system("pause");
+	//return 0;
 
 	while(true) {
-		std::cout<< "[0]: for read from file, [1]: for read from console\ngraph mgr:>";
-		std::cin>>option;
-		std::cout << "You selected " << ((option == "0")?"read from file":"read from console") << std::endl;
-		if(option == "0") std::cout<< mgr.readFromFile();
-		else std::cout<< mgr.readFromConsole();
+		uConsoleMgr::echo("[F]: for read from file, [C]: for read from console\n");
+		option = uConsoleMgr::ask<std::string>();
+		uConsoleMgr::echo("You selected ");
+		uConsoleMgr::echo((option == "F") ? "read from file" : "read from console");
+		uConsoleMgr::echo("\n");
+		if (option == "F") uConsoleMgr::echo(mgr.readFromFile(), uConsoleMgr::SUCCESS);
+		else uConsoleMgr::echo(mgr.readFromConsole(), uConsoleMgr::SUCCESS);
 	}
 	return 0;
 }
