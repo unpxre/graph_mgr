@@ -1,0 +1,8 @@
+Debug
+Release
+ipch
+graf_mgr/Debug
+graf_mgr/Release
+*.ipch
+*.opensdf
+*.sdf
