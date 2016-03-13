@@ -66,7 +66,7 @@ class Graph {
 
 class Mgr {
 	private:
-		Graph graph;
+		Graph *graph;
 
 		std::vector<std::string> split(const std::string &text, char sep) {
 		  std::vector<std::string> tokens;
@@ -97,17 +97,20 @@ class Mgr {
 		}
 	public:
 		Mgr() { }
+		~Mgr() {
+			// Nale¿y usun¹c utworozny dynamicznie obiekt "graph" jeœli istneije
+		}
 		std::string readFromFile() {
 
 			return "Read from file finished successfully.\n";
 		}
 
 		void showNeighbor() {
-			graph.showNeighbor();
+			graph->showNeighbor();
 		}
 
 		void  showIncident() {
-			graph.showIncident();
+			graph->showIncident();
 		}
 
 		std::string readFromConsole() {
@@ -117,12 +120,12 @@ class Mgr {
 			
 			uConsoleMgr::echo("Graph is oriented or not [Y]/[N]\n");
 			userTmpStr = uConsoleMgr::ask<std::string>();
-			Graph graph((userTmpStr == "Y")?true:false);
-			this->graph = graph;
+			
+			this->graph = new Graph((userTmpStr == "Y") ? true : false);
 			
 			uConsoleMgr::echo("Number of vertexes\n");
 			userTmpInt = uConsoleMgr::ask<int>();
-			graph.setNumbOfVertexes(userTmpInt);
+			graph->setNumbOfVertexes(userTmpInt);
 
 			uConsoleMgr::echo("Number of pairs\n");
 			pairs = uConsoleMgr::ask<int>();
@@ -130,17 +133,14 @@ class Mgr {
 				uConsoleMgr::echo("Pair in format [a,b]\n");
 				userTmpStr = uConsoleMgr::ask<std::string>();
 				std::vector<std::string> ab = split(userTmpStr, ',');
-				userTmpStr = graph.setPair(strToInt(ab[0]), strToInt(ab[1]));
+				userTmpStr = graph->setPair(strToInt(ab[0]), strToInt(ab[1]));
 				if(userTmpStr.length() > 0) {
 					uConsoleMgr::echo(userTmpStr, uConsoleMgr::WARNING);
 					--i;
 				}
 			}
-			graph.showNeighbor();
-			graph.showIncident();
 			return "Read from console finished successfully.\n";
 		}
-
 };
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -165,6 +165,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		uConsoleMgr::echo("\n");
 		if (option == "F") uConsoleMgr::echo(mgr.readFromFile(), uConsoleMgr::SUCCESS);
 		else uConsoleMgr::echo(mgr.readFromConsole(), uConsoleMgr::SUCCESS);
+
+		mgr.showNeighbor();
+		mgr.showIncident();
 	}
 	return 0;
 }
