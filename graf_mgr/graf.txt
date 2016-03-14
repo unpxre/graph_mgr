@@ -1,0 +1,4 @@
+1 # is oriented
+3 # vertexes
+1,2 # pair
+1,3 # pair
