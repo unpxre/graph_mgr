@@ -5,6 +5,7 @@ class Graph {
 		unsigned int vertexes;
 		std::map<int, std::set<int>> data;
 		typedef std::map<int, std::set<int>>::iterator dataIt;
+		typedef std::set<int>::iterator dataNeightIt;
 
 	public:
 		Graph(bool isOriented = false) {
@@ -39,7 +40,12 @@ class Graph {
 
 		*/
 		void showAdjacencyMatrix() {
-			uConsoleMgr::echo("\n\nAdjacency Matrix\n", uConsoleMgr::CUTE);
+			uConsoleMgr::echo("\nAdjacency Matrix\n    ", uConsoleMgr::CUTE);
+			for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
+				uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
+				uConsoleMgr::echo(" ");
+			}
+			uConsoleMgr::echo("\n");
 			for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
 				uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
 				uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
@@ -47,27 +53,28 @@ class Graph {
 					if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
 					else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
 				}
-				std::set<int>::iterator it;
 				uConsoleMgr::echo("]\n", uConsoleMgr::INFO);
 			}
 		}
 
 		/*
-		Wyœwietl macierz s¹siedztwa
+		Wyœwietl macierz incydencji
 		https://pl.wikipedia.org/wiki/Macierz_incydencji
 
 		*/
 		void  showIncidenceMatrix() {
 			if (isOriented) {
-				uConsoleMgr::echo("\n\nIncidence Matrix\n", uConsoleMgr::CUTE);
+				uConsoleMgr::echo("\nIncidence Matrix\n", uConsoleMgr::CUTE);
 				for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
 					uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
 					uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
-					for (unsigned int i = 1; i <= data.size(); ++i) {
-						if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
-						else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
+					for (dataIt iteratorD = data.begin(); iteratorD != data.end(); ++iteratorD) {
+						for (dataNeightIt it = iteratorD->second.begin(); it != iteratorD->second.end(); ++it) {
+							if (iterator->first == iteratorD->first) uConsoleMgr::echo(" 1 ", uConsoleMgr::NORMAL);
+							else if (iterator->first == *it) uConsoleMgr::echo("-1 ", uConsoleMgr::NORMAL);
+							else uConsoleMgr::echo(" 0 ", uConsoleMgr::NORMAL);
+						}
 					}
-					std::set<int>::iterator it;
 					uConsoleMgr::echo("]\n", uConsoleMgr::INFO);
 				}
 			}
