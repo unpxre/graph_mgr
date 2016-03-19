@@ -19,7 +19,7 @@ class Graph {
 			return true;
 		}
 
-		std::string setPair(int a, int b) {
+		std::string setPair(unsigned int a, unsigned int b) {
 			if ((a > vertexes) || (b > vertexes)) {
 				return "Bad pair data!\n";
 			}
@@ -43,7 +43,7 @@ class Graph {
 			for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
 				uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
 				uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
-				for (int i = 1; i <= data.size(); ++i) {
+				for (unsigned int i = 1; i <= data.size(); ++i) {
 					if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
 					else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
 				}
@@ -63,7 +63,7 @@ class Graph {
 				for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
 					uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
 					uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
-					for (int i = 1; i <= data.size(); ++i) {
+					for (unsigned int i = 1; i <= data.size(); ++i) {
 						if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
 						else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
 					}
