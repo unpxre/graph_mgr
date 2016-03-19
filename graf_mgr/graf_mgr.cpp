@@ -8,86 +8,18 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <queue>
 #include <sstream>
 #include <fstream>
 
 #define CMD_PROMPT "graph mgr:>"
 
 #include "console_mgr.h"
+#include "graph_search.h"
 
-#define VERSION 1.1
+#include "graph.h"
 
-class Graph {
-	private:
-		bool isOriented;
-		unsigned int vertexes;
-		std::map<int, std::set<int>> data;
-		typedef std::map<int, std::set<int>>::iterator dataIt;
-
-	public:
-		Graph(bool isOriented = false) {
-			this->isOriented = isOriented;
-		}
-
-		bool setNumbOfVertexes(int vertexes) {
-			this->vertexes = vertexes;
-			for(int i = 1; i <= vertexes; ++i) {
-				data.insert( std::pair<int, std::set<int>>(i, std::set<int>()) );
-			}
-			return true;
-		}
-
-		std::string setPair(int a, int b) {
-			if ( (a > vertexes) || (b > vertexes) ) return "Bad pair data!\n";
-			if (isOriented) {
-				this->data[a].insert( b );
-			} else {
-				this->data[a].insert( b );
-				this->data[b].insert( a );
-			}
-			return "";
-		}
-
-		/*
-			Wyœwietl macierz s¹siedztwa
-			https://pl.wikipedia.org/wiki/Macierz_s%C4%85siedztwa
-
-		*/
-		void showAdjacencyMatrix() {
-			uConsoleMgr::echo("\n\nAdjacency Matrix\n", uConsoleMgr::CUTE);
-			for(dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
-				uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
-				uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
-				for (int i = 1; i <= data.size(); ++i) {
-					if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
-					else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
-				}
-				std::set<int>::iterator it;
-				uConsoleMgr::echo("]\n", uConsoleMgr::INFO);
-			}
-		}
-
-		/*
-		Wyœwietl macierz s¹siedztwa
-		https://pl.wikipedia.org/wiki/Macierz_incydencji
-
-		*/
-		void  showIncidenceMatrix() {
-			if (isOriented) {
-				uConsoleMgr::echo("\n\nIncidence Matrix\n", uConsoleMgr::CUTE);
-				for (dataIt iterator = data.begin(); iterator != data.end(); ++iterator) {
-					uConsoleMgr::echo(iterator->first, uConsoleMgr::SUCCESS);
-					uConsoleMgr::echo(" [ ", uConsoleMgr::INFO);
-					for (int i = 1; i <= data.size(); ++i) {
-						if (iterator->second.find(i) != iterator->second.end()) uConsoleMgr::echo("1 ", uConsoleMgr::NORMAL);
-						else uConsoleMgr::echo("0 ", uConsoleMgr::NORMAL);
-					}
-					std::set<int>::iterator it;
-					uConsoleMgr::echo("]\n", uConsoleMgr::INFO);
-				}
-			} else uConsoleMgr::echo("Can not show Incidence Matrix for not oriented Graph.\n", uConsoleMgr::WARNING);
-		}
-};
+#define VERSION 1.2
 
 class Mgr {
 	private:
@@ -118,6 +50,21 @@ class Mgr {
 			  i++;
 			}
 			return m ? -tmp : tmp;   
+		}
+
+		std::string intToStr(int n){
+			std::string tmp, ret;
+			if (n < 0) {
+				ret = "-";
+				n = -n;
+			}
+			do {
+				tmp += n % 10 + 48;
+				n -= n % 10;
+			} while (n /= 10);
+			for (int i = tmp.size() - 1; i >= 0; i--)
+				ret += tmp[i];
+			return ret;
 		}
 
 		std::string trim(std::string &str) {
@@ -161,16 +108,21 @@ class Mgr {
 			if (fileHandle.is_open()) {
 				// Odczytanie podstawowych informacji o grafie
 				if (fileHandle.good()) {
-					getline(fileHandle, line);
+					line = "";
+					while (fileHandle.good() && line.length() < 2) getline(fileHandle, line);
 					isOriented = (confLineToInt(line) == 1) ? true : false;
+					if (isOriented) uConsoleMgr::echo("Graph reading from file is oriented.\n", uConsoleMgr::INFO);
+					else uConsoleMgr::echo("Graph reading from file is NOT oriented.\n", uConsoleMgr::INFO);
 				} else return ("First line in file: " + filePath + " must contain 1/0 (graph is oriented or not)\n");
 				if (graphExist) delete this->graph;
 				this->graph = new Graph(isOriented);
 				graphExist = true;
 				
 				if (fileHandle.good()) {
-					getline(fileHandle, line);
+					line = "";
+					while (fileHandle.good() && line.length() < 2) getline(fileHandle, line);
 					vertexes = confLineToInt(line);
+					uConsoleMgr::echo("Graph reading from file have " + intToStr(vertexes) + " vertexes.\n", uConsoleMgr::INFO);
 				}
 				else return ("Second line in file: " + filePath + " must the number of vertexes\n");
 				graph->setNumbOfVertexes(vertexes);
@@ -178,6 +130,7 @@ class Mgr {
 				// Odczytanie par
 				while (fileHandle.good()) {
 					getline(fileHandle, line);
+					if (line.length() < 2) continue;
 					std::vector <std::string> ab = confLineToVector(line);
 					if (ab.size() == 2) {
 						tmp = graph->setPair(strToInt(ab[0]), strToInt(ab[1]));
@@ -200,6 +153,16 @@ class Mgr {
 		void  showIncidenceMatrix() {
 			if (!graphExist) return;
 			graph->showIncidenceMatrix();
+		}
+
+		void getBFSWay() {
+			if (!graphExist) return;
+			graph->getBFSWay(1);
+		}
+
+		void getDFSWay() {
+			if (!graphExist) return;
+			graph->getDFSWay(1);
 		}
 
 		std::string readFromConsole() {
@@ -247,18 +210,58 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::string option;
 	Mgr mgr;
 
-	while(true) {
-		uConsoleMgr::echo("[F]: for read from file, [C]: for read from console, [X]: exit\n");
-		option = uConsoleMgr::ask<std::string>();
-		if (option == "X") break;
-		uConsoleMgr::echo("You selected ");
-		uConsoleMgr::echo((option == "F") ? "read from file" : "read from console");
-		uConsoleMgr::echo("\n");
-		if (option == "F") uConsoleMgr::echo(mgr.readFromFile("graf.txt"), uConsoleMgr::SUCCESS);
-		else uConsoleMgr::echo(mgr.readFromConsole(), uConsoleMgr::SUCCESS);
+	enum mainOption {
+		READ_GRAPH_FROM_FILE		= 'F',
+		READ_GRAPH_FROM_CONSOLE		= 'C',
+		SHOW_ADJENCY_MATRIX			= 'A',
+		SHOW_INCIDENCE_MATRIX		= 'I',
+		SHOW_BFS					= 'B',
+		SHOW_DFS					= 'D',
 
-		mgr.showAdjacencyMatrix();
-		mgr.showIncidenceMatrix();
+		EXIT						= 'X'
+	};
+
+	std::string usageInfo =
+		"[F]: for read graph from file,\n"
+		"[C]: for read graph from console,\n" 
+		"[A]: show adjency matrix for graph,\n"
+		"[I]: show incidence matrix for graph,\n"
+		"[B]: show BFS,\n"
+		"[D]: show DFS,\n"
+		
+		"[X]: exit\n";
+
+	while(true) {
+		uConsoleMgr::echo(usageInfo);
+		option = uConsoleMgr::ask<std::string>();
+		
+		if (option.length() < 1) continue;
+
+		switch (option[0]) {
+			case READ_GRAPH_FROM_FILE:
+				uConsoleMgr::echo("You selected read graph from file.\n");
+				uConsoleMgr::echo(mgr.readFromFile("graf.txt"), uConsoleMgr::SUCCESS);
+				break;
+			case READ_GRAPH_FROM_CONSOLE:
+				uConsoleMgr::echo("You selected read graph from console.\n");
+				uConsoleMgr::echo(mgr.readFromConsole(), uConsoleMgr::SUCCESS);
+				break;
+			case SHOW_ADJENCY_MATRIX:
+				mgr.showAdjacencyMatrix();
+				break;
+			case SHOW_INCIDENCE_MATRIX:
+				mgr.showIncidenceMatrix();
+				break;
+			case SHOW_BFS:
+				mgr.getBFSWay();
+				break;
+			case SHOW_DFS:
+				mgr.getDFSWay();
+				break;
+
+			case EXIT:
+				return 0;
+		}
 	}
 	return 0;
 }
