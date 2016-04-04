@@ -107,9 +107,11 @@ TODO: nie liczysz czasu a nie wiesz czy trzeba i wtf jest ten czas? i po co petl
 class DFS {
 	private:
 		typedef std::map<int, std::set<int>>::iterator graphIt;
+		typedef std::map<int, ColorVertex>::iterator vertxIt;
+		typedef std::list<int>::iterator topSortIt;
 		std::map<int, std::set<int>> vertexesNeighbor;
 		std::map<int, ColorVertex> vertexes;
-		int initVertex;
+		std::list<int> topologicalSorted;
 
 		void colourVertexes() {
 			for (graphIt iterator = vertexesNeighbor.begin(); iterator != vertexesNeighbor.end(); ++iterator) {
@@ -125,20 +127,29 @@ class DFS {
 				if ((vertexes[*it].getColor() == ColorVertex::BLACK) || (vertexes[*it].getColor() == ColorVertex::GREY)) continue;
 				visit((int)*it);
 			}
+			topologicalSorted.push_front(x);
 			vertexes[x].setColor(ColorVertex::BLACK);
 		}
 
 		void process() {
 			uConsoleMgr::echo("\nProcessing search(DFS)\n", uConsoleMgr::CUTE);
-			visit(initVertex);
-			uConsoleMgr::echo("\nProcessed successfully\n\n", uConsoleMgr::SUCCESS);
+			uConsoleMgr::echo("DFS way: ", uConsoleMgr::INFO);
+			for (vertxIt it = vertexes.begin(); it != vertexes.end(); ++it) {
+				if (it->second.getColor() == ColorVertex::WHITE) visit((int)it->first);
+			}
+			uConsoleMgr::echo("\nProcessed successfully", uConsoleMgr::SUCCESS);
+			uConsoleMgr::echo("\nTopological sort: ", uConsoleMgr::INFO);
+			for (topSortIt it = topologicalSorted.begin(); it != topologicalSorted.end(); ++it) {
+				uConsoleMgr::echo(*it, uConsoleMgr::NORMAL);
+				uConsoleMgr::echo(" ");
+			}
+			uConsoleMgr::echo("\n\n");
 		}
 
 	public:
 		DFS(std::map<int, std::set<int>> graph, int initVertex) {
 			this->vertexesNeighbor = graph;
 			this->colourVertexes();
-			this->initVertex = initVertex;		
 
 			this->process();
 		}
