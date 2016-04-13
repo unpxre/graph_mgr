@@ -115,8 +115,10 @@ class Mgr {
 			return "Read from file finished successfully.\n";
 		}
 		
-		std::string readFromFile(std::string readWeightsFromFile) {
+		std::string readWeightsFromFile(std::string filePath) {
 
+
+			return "";
 		}
 
 		void showAdjacencyMatrix() {
