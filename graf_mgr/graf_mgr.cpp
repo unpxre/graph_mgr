@@ -23,6 +23,12 @@
 
 #define VERSION 1.2
 
+// wczytywanie wag zrob...
+// https://pl.wikipedia.org/wiki/Algorytm_Prima
+//drzewo dowolnie rozpinajace 
+//dijska
+
+
 class Mgr {
 	private:
 		Graph *graph;
@@ -108,6 +114,10 @@ class Mgr {
 
 			return "Read from file finished successfully.\n";
 		}
+		
+		std::string readFromFile(std::string readWeightsFromFile) {
+
+		}
 
 		void showAdjacencyMatrix() {
 			if (!graphExist) return;
@@ -126,7 +136,13 @@ class Mgr {
 
 		void getDFSWay() {
 			if (!graphExist) return;
-			graph->getDFSWay(1);
+			graph->getDFSWay();
+		}
+
+		void getSCC() {
+			if (!graphExist) return;
+			//graph->getDFSWay();
+			graph->getSCC();
 		}
 
 		std::string readFromConsole() {
@@ -175,23 +191,27 @@ int _tmain(int argc, _TCHAR* argv[])
 	Mgr mgr;
 
 	enum mainOption {
-		READ_GRAPH_FROM_FILE		= 'F',
-		READ_GRAPH_FROM_CONSOLE		= 'C',
-		SHOW_ADJENCY_MATRIX			= 'A',
-		SHOW_INCIDENCE_MATRIX		= 'I',
-		SHOW_BFS					= 'B',
-		SHOW_DFS					= 'D',
+		READ_GRAPH_FROM_FILE					= 'F',
+		READ_GRAPH_AND_WEIGHTS_FROM_FILE		= 'W',
+		READ_GRAPH_FROM_CONSOLE					= 'C',
+		SHOW_ADJENCY_MATRIX						= 'A',
+		SHOW_INCIDENCE_MATRIX					= 'I',
+		SHOW_BFS								= 'B',
+		SHOW_DFS								= 'D',
+		SHOW_SCC								= 'S',
 
-		EXIT						= 'X'
+		EXIT									= 'X'
 	};
 
 	std::string usageInfo =
 		"[F]: for read graph from file,\n"
+		"[W]: for read graph and weights from file,\n"
 		"[C]: for read graph from console,\n" 
 		"[A]: show adjency matrix for graph,\n"
 		"[I]: show incidence matrix for graph,\n"
 		"[B]: show BFS,\n"
 		"[D]: show DFS,\n"
+		"[S]: show Strongly-Connected-Components,\n"
 		
 		"[X]: exit\n";
 
@@ -204,7 +224,12 @@ int _tmain(int argc, _TCHAR* argv[])
 		switch (option[0]) {
 			case READ_GRAPH_FROM_FILE:
 				uConsoleMgr::echo("You selected read graph from file.\n");
-				uConsoleMgr::echo(mgr.readFromFile("graf.txt"), uConsoleMgr::SUCCESS);
+				uConsoleMgr::echo(mgr.readFromFile("g.txt"), uConsoleMgr::SUCCESS);
+				break;
+			case READ_GRAPH_AND_WEIGHTS_FROM_FILE:
+				uConsoleMgr::echo("You selected read graph and weights from file.\n");
+				uConsoleMgr::echo(mgr.readFromFile("g.txt"), uConsoleMgr::SUCCESS);
+				uConsoleMgr::echo(mgr.readWeightsFromFile("w.txt"), uConsoleMgr::SUCCESS);
 				break;
 			case READ_GRAPH_FROM_CONSOLE:
 				uConsoleMgr::echo("You selected read graph from console.\n");
@@ -221,6 +246,9 @@ int _tmain(int argc, _TCHAR* argv[])
 				break;
 			case SHOW_DFS:
 				mgr.getDFSWay();
+				break;
+			case SHOW_SCC:
+				mgr.getSCC();
 				break;
 
 			case EXIT:

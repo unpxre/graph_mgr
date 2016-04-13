@@ -15,12 +15,14 @@ class ColorVertex {
 		color c;
 		int distance; // -1 is oo
 		int previous;
+		int processTime;
 
 	public:
 		ColorVertex(int previous = NULL, color c = WHITE) {
 			this->c = c;
 			this->distance = -1;
 			this->previous = previous;
+			this->processTime = 0;
 		}
 
 		void setColor(color c) {
@@ -31,12 +33,20 @@ class ColorVertex {
 			return this->c;
 		}
 
+		int getProcessTime() {
+			return this->processTime;
+		}
+
 		void setDistance(int distance) {
 			this->distance = distance;
 		}
 
 		void setPrevious(int previous) {
 			this->previous = previous;
+		}
+
+		void setProcessTime(int processTime) {
+			this->processTime = processTime;
 		}
 };
 
@@ -102,7 +112,6 @@ class BFS {
 
 /*
 Przeszukianie wg³¹b
-TODO: nie liczysz czasu a nie wiesz czy trzeba i wtf jest ten czas? i po co petle w liniach 4,5,6 w pdf?
 */
 class DFS {
 	private:
@@ -111,11 +120,14 @@ class DFS {
 		typedef std::list<int>::iterator topSortIt;
 		std::map<int, std::set<int>> vertexesNeighbor;
 		std::map<int, ColorVertex> vertexes;
+		std::map<int, ColorVertex> vertexesForSCCProcess;
 		std::list<int> topologicalSorted;
+		std::set<int> SCC;
+		int currentProcessTime;
 
-		void colourVertexes() {
+		void colourVertexes(std::map<int, ColorVertex> &v) {
 			for (graphIt iterator = vertexesNeighbor.begin(); iterator != vertexesNeighbor.end(); ++iterator) {
-				vertexes.insert(std::pair<int, ColorVertex>(iterator->first, ColorVertex()));
+				v.insert(std::pair<int, ColorVertex>(iterator->first, ColorVertex()));
 			}
 		}
 
@@ -129,6 +141,22 @@ class DFS {
 			}
 			topologicalSorted.push_front(x);
 			vertexes[x].setColor(ColorVertex::BLACK);
+			vertexes[x].setProcessTime(currentProcessTime);
+			++this->currentProcessTime;
+		}
+
+		void reverseGraphVisit(int x) {
+			//std::cout << x << "\n $ ";
+			for (graphIt iterator = vertexesNeighbor.begin(); iterator != vertexesNeighbor.end(); ++iterator) {
+				for (std::set<int>::iterator it = iterator->second.begin(); it != iterator->second.end(); ++it) {
+					if ((*it == x) && (vertexesForSCCProcess[iterator->first].getColor() == ColorVertex::WHITE)) {
+						//std::cout << iterator->first << ", ";
+						SCC.insert(iterator->first);
+						vertexesForSCCProcess[iterator->first].setColor(ColorVertex::GREY);
+						reverseGraphVisit(iterator->first);
+					}
+				}
+			}
 		}
 
 		void process() {
@@ -143,15 +171,53 @@ class DFS {
 				uConsoleMgr::echo(*it, uConsoleMgr::NORMAL);
 				uConsoleMgr::echo(" ");
 			}
+			uConsoleMgr::echo("\nProcess Time: ", uConsoleMgr::INFO);
+			for (vertxIt it = vertexes.begin(); it != vertexes.end(); ++it) {
+				uConsoleMgr::echo(it->first, uConsoleMgr::NORMAL);
+				uConsoleMgr::echo(" (");
+				uConsoleMgr::echo(it->second.getProcessTime(), uConsoleMgr::NORMAL);
+				uConsoleMgr::echo(") ");
+			}
 			uConsoleMgr::echo("\n\n");
 		}
 
 	public:
-		DFS(std::map<int, std::set<int>> graph, int initVertex) {
+		DFS(std::map<int, std::set<int>> graph) {
 			this->vertexesNeighbor = graph;
-			this->colourVertexes();
+			this->colourVertexes(this->vertexes);
 
+			this->currentProcessTime = 1;
 			this->process();
+		}
+
+		/*
+			WYgeneruj silnie spojne sk³adowe
+			http://www.algorytm.org/algorytmy-grafowe/silnie-spojne-skladowe.html
+		*/
+		void getSCC() {
+			uConsoleMgr::echo("\nProcessing Strongly-Connected-Components\n", uConsoleMgr::CUTE);
+			int actProcessTime = vertexes.size();
+			this->colourVertexes(this->vertexesForSCCProcess);
+			for (vertxIt it = vertexes.begin(); it != vertexes.end(); ++it) {
+				for (vertxIt itD = vertexes.begin(); itD != vertexes.end(); ++itD) {
+					if (itD->second.getProcessTime() == actProcessTime) {
+						--actProcessTime;
+						if (vertexesForSCCProcess[itD->first].getColor() == ColorVertex::WHITE) {
+							uConsoleMgr::echo("\n - - -\n");
+							SCC.clear();
+							SCC.insert(itD->first);
+							vertexesForSCCProcess[itD->first].setColor(ColorVertex::GREY);
+							this->reverseGraphVisit(itD->first);
+							for (std::set<int>::iterator i = SCC.begin(); i != SCC.end(); i++) {
+								uConsoleMgr::echo(*i, uConsoleMgr::SUCCESS);
+								uConsoleMgr::echo(", ", uConsoleMgr::SUCCESS);
+							}
+						}
+					}
+				}
+			}
+			uConsoleMgr::echo("\n\n");
+
 		}
 };
 

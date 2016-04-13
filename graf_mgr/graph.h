@@ -4,6 +4,7 @@ class Graph {
 		bool isOriented;
 		unsigned int vertexes;
 		std::map<int, std::set<int>> data;
+		std::map<std::pair<unsigned int, unsigned int>, int> weights;
 		typedef std::map<int, std::set<int>>::iterator dataIt;
 		typedef std::set<int>::iterator dataNeightIt;
 
@@ -32,6 +33,14 @@ class Graph {
 				this->data[b].insert(a);
 			}
 			return "";
+		}
+
+		std::string setWeight(unsigned int a, unsigned int b, int w) {
+			if ((a > vertexes) || (b > vertexes)) {
+				return "Bad weight data!\n";
+			}
+			this->weights.insert(std::pair<std::pair<unsigned int, unsigned int>,int>( std::pair<unsigned int, unsigned int>(a, b), w) );
+			//vertexesWeights
 		}
 
 		/*
@@ -93,9 +102,14 @@ class Graph {
 		/*
 		Przeszukaj w g³¹b (DFS)
 		*/
-		std::vector<int> getDFSWay(int initVertex) {
-			DFS(this->data, initVertex);
+		std::vector<int> getDFSWay() {
+			DFS(this->data);
 			std::vector < int > a;
 			return a;
+		}
+
+		void getSCC() {
+			DFS dfs = DFS(this->data);
+			dfs.getSCC();
 		}
 };
