@@ -128,7 +128,39 @@ class Graph {
 		https://pl.wikipedia.org/wiki/Minimalne_drzewo_rozpinaj%C4%85ce
 		*/
 		void getMinTree() {
+			const int INFINITY_VALUE = 100000;
+			std::set<int> visitedVertexes;
+			unsigned int bestNewWayWeight;
+			std::pair<unsigned int, unsigned int> bestNewWay;
+			std::vector<std::pair<unsigned int, unsigned int>> usedEdges;
+			unsigned int finalWeight = 0;
 
+			visitedVertexes.insert(1);
+			while (visitedVertexes.size() < this->vertexes) {
+				bestNewWayWeight = INFINITY_VALUE;
+				for (unsigned int from : visitedVertexes) {
+					for (unsigned int to : data[from]) {
+						if ( (visitedVertexes.find(to) == visitedVertexes.end()) && (weights[std::pair<int, int>(from, to)] < bestNewWayWeight) ) {
+							bestNewWay = std::pair<unsigned int, unsigned int>(from, to);
+							bestNewWayWeight = weights[std::pair<int, int>(from, to)];
+						}
+					}
+				}
+
+				usedEdges.push_back(bestNewWay);
+				visitedVertexes.insert(bestNewWay.second);
+				finalWeight += bestNewWayWeight;
+			}
+
+			uConsoleMgr::echo("The weight of the minimum spanning tree is ", uConsoleMgr::INFO);
+			uConsoleMgr::echo(finalWeight, uConsoleMgr::SUCCESS);
+			uConsoleMgr::echo(", edges: \n", uConsoleMgr::INFO);
+			for (auto x : usedEdges) {
+				uConsoleMgr::echo(x.first, uConsoleMgr::CUTE);
+				uConsoleMgr::echo(" -> ", uConsoleMgr::INFO);
+				uConsoleMgr::echo(x.second, uConsoleMgr::CUTE);
+				uConsoleMgr::echo("\n");
+			}
 		}
 
 		/*
@@ -189,8 +221,5 @@ class Graph {
 				}
 				uConsoleMgr::echo("END \n", uConsoleMgr::INFO);
 			}
-
-			
-
 		}
 };
