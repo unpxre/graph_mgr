@@ -69,7 +69,7 @@ class Mgr {
 		~Mgr() {
 			if (graphExist) delete this->graph;
 		}
-		std::string readFromFile(std::string filePath) {
+		std::string readFromFile(std::string filePath, bool withWeight = false) {
 			std::string line, tmp;
 			std::fstream fileHandle;
 			bool isOriented;
@@ -102,8 +102,13 @@ class Mgr {
 					getline(fileHandle, line);
 					if (line.length() < 2) continue;
 					std::vector <std::string> ab = confLineToVector(line);
-					if (ab.size() == 2) {
+					if (ab.size() >= 2 && !withWeight) {
 						tmp = graph->setPair(strToInt(ab[0]), strToInt(ab[1]));
+						if (tmp.length() > 0) {
+							uConsoleMgr::echo(tmp, uConsoleMgr::WARNING);
+						}
+					} else if (ab.size() >= 3 && withWeight) {
+						tmp = graph->setPair(strToInt(ab[0]), strToInt(ab[1]), strToInt(ab[2]));
 						if (tmp.length() > 0) {
 							uConsoleMgr::echo(tmp, uConsoleMgr::WARNING);
 						}
@@ -145,6 +150,23 @@ class Mgr {
 			if (!graphExist) return;
 			//graph->getDFSWay();
 			graph->getSCC();
+		}
+
+		void getMinTree() {
+			if (!graphExist) return;
+			graph->getMinTree();
+		}
+
+		void findWay() {
+			if (!graphExist) return;
+			unsigned int a, b;
+			uConsoleMgr::echo("Set initial vertex:\n");
+			a = uConsoleMgr::ask<int>();
+
+			uConsoleMgr::echo("Set target vertex:\n");
+			b = uConsoleMgr::ask<int>();
+
+			graph->findWay(a,b);
 		}
 
 		std::string readFromConsole() {
@@ -201,6 +223,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		SHOW_BFS								= 'B',
 		SHOW_DFS								= 'D',
 		SHOW_SCC								= 'S',
+		SHOW_PRIM								= 'P',
+		SHOW_DIJSKRA							= 'J',
 
 		EXIT									= 'X'
 	};
@@ -214,6 +238,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		"[B]: show BFS,\n"
 		"[D]: show DFS,\n"
 		"[S]: show Strongly-Connected-Components,\n"
+		"[P]: minimum spanning tree (prim algorithm),\n"
+		"[J]: find optime way (dijskra algorithm),\n"
 		
 		"[X]: exit\n";
 
@@ -230,8 +256,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				break;
 			case READ_GRAPH_AND_WEIGHTS_FROM_FILE:
 				uConsoleMgr::echo("You selected read graph and weights from file.\n");
-				uConsoleMgr::echo(mgr.readFromFile("g.txt"), uConsoleMgr::SUCCESS);
-				uConsoleMgr::echo(mgr.readWeightsFromFile("w.txt"), uConsoleMgr::SUCCESS);
+				uConsoleMgr::echo(mgr.readFromFile("g.txt", true), uConsoleMgr::SUCCESS);
 				break;
 			case READ_GRAPH_FROM_CONSOLE:
 				uConsoleMgr::echo("You selected read graph from console.\n");
@@ -251,6 +276,12 @@ int _tmain(int argc, _TCHAR* argv[])
 				break;
 			case SHOW_SCC:
 				mgr.getSCC();
+				break;
+			case SHOW_PRIM:
+				mgr.getMinTree();
+				break;
+			case SHOW_DIJSKRA:
+				mgr.findWay();
 				break;
 
 			case EXIT:

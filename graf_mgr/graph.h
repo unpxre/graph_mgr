@@ -21,7 +21,7 @@ class Graph {
 			return true;
 		}
 
-		std::string setPair(unsigned int a, unsigned int b) {
+		std::string setPair(unsigned int a, unsigned int b, unsigned int weight = 0) {
 			if ((a > vertexes) || (b > vertexes)) {
 				return "Bad pair data!\n";
 			}
@@ -32,15 +32,22 @@ class Graph {
 				this->data[a].insert(b);
 				this->data[b].insert(a);
 			}
-			return "";
+
+			return this->setWeight(a, b, weight);
 		}
 
-		std::string setWeight(unsigned int a, unsigned int b, int w) {
+		std::string setWeight(unsigned int a, unsigned int b, unsigned int w) {
 			if ((a > vertexes) || (b > vertexes)) {
 				return "Bad weight data!\n";
 			}
-			this->weights.insert(std::pair<std::pair<unsigned int, unsigned int>,int>( std::pair<unsigned int, unsigned int>(a, b), w) );
-			//vertexesWeights
+			if (isOriented) {
+				this->weights.insert(std::pair<std::pair<unsigned int, unsigned int>, int>(std::pair<unsigned int, unsigned int>(a, b), w));
+			} else {
+				this->weights.insert(std::pair<std::pair<unsigned int, unsigned int>, int>(std::pair<unsigned int, unsigned int>(a, b), w));
+				this->weights.insert(std::pair<std::pair<unsigned int, unsigned int>, int>(std::pair<unsigned int, unsigned int>(b, a), w));
+			}
+
+			return "";
 		}
 
 		/*
@@ -108,8 +115,82 @@ class Graph {
 			return a;
 		}
 
+		/*
+		Spójne sk³adowe
+		*/
 		void getSCC() {
 			DFS dfs = DFS(this->data);
 			dfs.getSCC();
+		}
+
+		/*
+		Minimlane drzewo rozpinaj¹ce
+		https://pl.wikipedia.org/wiki/Minimalne_drzewo_rozpinaj%C4%85ce
+		*/
+		void getMinTree() {
+
+		}
+
+		/*
+		Najkrótsza œcie¿ka
+		https://pl.wikipedia.org/wiki/Algorytm_Dijkstry
+		*/
+		void findWay(unsigned int startVertex, unsigned int endVertex) {
+			const int INFINITY_VALUE = 100000;
+
+			std::vector<int> minimalDistance(this->vertexes+1, INFINITY_VALUE);
+			minimalDistance[startVertex] = 0;
+			std::set< std::pair<int, int> > activeVertices;
+			activeVertices.insert({ 0, startVertex });
+			std::map<int, int> prevVertex;
+			unsigned int minDist = INFINITY_VALUE;
+
+			while (!activeVertices.empty()) {
+				int where = activeVertices.begin()->second;
+
+				if (where == endVertex) {
+					minDist = minimalDistance[where];
+					break;
+				}
+
+				activeVertices.erase(activeVertices.begin());
+
+				for (unsigned int x : data[where]) {
+					if (minimalDistance[x] > minimalDistance[where] + weights[std::pair<int,int>(where,x)]) {
+						activeVertices.erase({ minimalDistance[x], x });
+						minimalDistance[x] = minimalDistance[where] + weights[std::pair<int, int>(where, x)];
+						activeVertices.insert({ minimalDistance[x], x });
+						if (prevVertex.find(x) == prevVertex.end()) {
+							prevVertex.insert({ x, where });
+						} else {
+							prevVertex[x] = where;
+						}
+					}
+				}
+			}
+
+			if (minDist != INFINITY_VALUE) {
+				uConsoleMgr::echo("Minimal distance is ", uConsoleMgr::INFO);
+				uConsoleMgr::echo(minDist, uConsoleMgr::SUCCESS);
+				uConsoleMgr::echo(", way:\nSTART -> ", uConsoleMgr::INFO);
+				int actVertex = endVertex;
+				std::deque<int> way;
+				way.push_front(actVertex);
+				while (true) {
+					if (prevVertex.find(actVertex) != prevVertex.end()) {
+						way.push_front(prevVertex[actVertex]);
+						actVertex = prevVertex[actVertex];
+					}
+					else break;
+				}
+				for (int q : way) {
+					uConsoleMgr::echo(q, uConsoleMgr::CUTE);
+					uConsoleMgr::echo(" -> ", uConsoleMgr::INFO);
+				}
+				uConsoleMgr::echo("END \n", uConsoleMgr::INFO);
+			}
+
+			
+
 		}
 };
