@@ -222,4 +222,55 @@ class Graph {
 				uConsoleMgr::echo("END \n", uConsoleMgr::INFO);
 			}
 		}
+
+
+		/*
+		Kolorowanie grafu
+		https://pl.wikipedia.org/wiki/Kolorowanie_grafu
+		https://inf.ug.edu.pl/~hanna/grafy/14_kolorowanie.pdf (u¿yty algorytm NC )
+		*/
+		void minColors() {
+			std::vector<int> vertexesColors(this->vertexes + 1, 0); // Ustaw kolor na 0 (<- brak koloru) dla ka¿dego wierzcho³ka w grafie
+			unsigned int usedColors = 0;
+			std::set<int> neightBourColors;
+			unsigned int newColor = 0;
+			for (auto currVertex : this->data) {
+				neightBourColors.clear();
+				for (auto neightbourVertex : currVertex.second) neightBourColors.insert(vertexesColors[neightbourVertex]);
+				newColor = 0;
+				for (int color = 1; color <= usedColors; ++color) {
+					if (neightBourColors.find(color) == neightBourColors.end()) {
+						newColor = color;
+						break;
+					}
+				}
+				if (newColor == 0) newColor = ++usedColors;
+					
+				std::cout << "X " << currVertex.first << " " << neightBourColors.size() << " > " << newColor << std::endl;
+				vertexesColors[currVertex.first] = newColor;
+			}
+
+			uConsoleMgr::echo("Minimal colors number is ", uConsoleMgr::INFO);
+			uConsoleMgr::echo(usedColors, uConsoleMgr::SUCCESS);
+			uConsoleMgr::echo("\n");
+			int colors[] = { uConsoleMgr::NORMAL, uConsoleMgr::SUCCESS, uConsoleMgr::INFO, uConsoleMgr::CUTE };
+
+			if (usedColors <= 4) {
+				uConsoleMgr::echo("Colors: ", uConsoleMgr::INFO);
+				for (auto currVertex : this->data) {
+					uConsoleMgr::echo(currVertex.first, colors[vertexesColors[currVertex.first]]);
+					uConsoleMgr::echo(" ");
+				}
+				uConsoleMgr::echo("\n");
+			}
+		}
+
+
+		/*
+		Problem maksymalnego przep³ywu
+		https://pl.wikipedia.org/wiki/Problem_maksymalnego_przep%C5%82ywu
+		*/
+		void maxFlow(unsigned int startVertex, unsigned int endVertex) {
+
+		}
 };

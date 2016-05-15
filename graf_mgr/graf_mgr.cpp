@@ -169,6 +169,23 @@ class Mgr {
 			graph->findWay(a,b);
 		}
 
+		void minColors() {
+			if (!graphExist) return;
+			graph->minColors();
+		}
+
+		void maxFlow() {
+			if (!graphExist) return;
+			unsigned int a, b;
+			uConsoleMgr::echo("Set initial vertex:\n");
+			a = uConsoleMgr::ask<int>();
+
+			uConsoleMgr::echo("Set target vertex:\n");
+			b = uConsoleMgr::ask<int>();
+
+			graph->maxFlow(a, b);
+		}
+
 		std::string readFromConsole() {
 			std::string userTmpStr;
 			int userTmpInt;
@@ -225,6 +242,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		SHOW_SCC								= 'S',
 		SHOW_PRIM								= 'P',
 		SHOW_DIJSKRA							= 'J',
+		SHOW_GRAPH_MIN_COLORS					= 'K',
+		SHOW_MAXIMUM_FLOW						= 'M',
 
 		EXIT									= 'X'
 	};
@@ -239,7 +258,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		"[D]: show DFS,\n"
 		"[S]: show Strongly-Connected-Components,\n"
 		"[P]: minimum spanning tree (prim algorithm),\n"
-		"[J]: find optime way (dijskra algorithm),\n"
+		"[K]: graph coloring,\n"
+		"[M]: maximum flow,\n"
 		
 		"[X]: exit\n";
 
@@ -282,6 +302,12 @@ int _tmain(int argc, _TCHAR* argv[])
 				break;
 			case SHOW_DIJSKRA:
 				mgr.findWay();
+				break;
+			case SHOW_GRAPH_MIN_COLORS:
+				mgr.minColors();
+				break;
+			case SHOW_MAXIMUM_FLOW:
+				mgr.maxFlow();
 				break;
 
 			case EXIT:
